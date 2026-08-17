@@ -1,0 +1,17 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Pstryk Prosumer Deposit",
+        "description": "Enter your Pstryk account credentials (email/password used in the mobile app).",
+        "data": {
+          "email": "Email",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid email or password"
+    }
+  }
+}

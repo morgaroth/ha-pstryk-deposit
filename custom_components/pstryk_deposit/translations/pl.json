@@ -1,0 +1,17 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Pstryk Depozyt Prosumencki",
+        "description": "Podaj dane logowania do konta Pstryk (email/hasło z aplikacji mobilnej).",
+        "data": {
+          "email": "Email",
+          "password": "Hasło"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Nieprawidłowy email lub hasło"
+    }
+  }
+}

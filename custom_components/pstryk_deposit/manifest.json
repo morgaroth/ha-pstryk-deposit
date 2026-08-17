@@ -1,0 +1,11 @@
+{
+  "domain": "pstryk_deposit",
+  "name": "Pstryk Prosumer Deposit",
+  "version": "1.0.0",
+  "documentation": "",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": [],
+  "iot_class": "cloud_polling",
+  "config_flow": true
+}
