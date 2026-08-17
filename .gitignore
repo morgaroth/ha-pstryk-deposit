@@ -1,2 +1,9 @@
 .DS_Store
 /.idea
+.venv
+*.iml
+.run
+
+/testing/ha-container-config/
+*.pyc
+node_modules/

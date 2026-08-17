@@ -6,12 +6,13 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity, DataUpdateCoordinator
 
 from .const import DOMAIN
+from .helpers import normalize_description
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,
-    entry: ConfigEntry,
-    async_add_entities: AddEntitiesCallback,
+        hass: HomeAssistant,
+        entry: ConfigEntry,
+        async_add_entities: AddEntitiesCallback,
 ) -> None:
     coordinator: DataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities([
@@ -39,25 +40,10 @@ class ProsumerDepositSensor(CoordinatorEntity, SensorEntity):
             return self.coordinator.data.get("prosumer_deposit")
         return None
 
-    @property
-    def extra_state_attributes(self):
-        if not self.coordinator.data:
-            return None
-        attrs = {}
-        by_meter = self.coordinator.data.get("prosumer_deposit_by_meter")
-        if by_meter:
-            attrs["deposit_by_meter"] = by_meter
-        transactions = self.coordinator.data.get("transactions", [])
-        attrs["transaction_count"] = len(transactions)
-        return attrs
-
 
 class ProsumerDepositLastTransactionSensor(CoordinatorEntity, SensorEntity):
-    """Last deposit transaction amount."""
+    """Last deposit transactions."""
 
-    _attr_device_class = SensorDeviceClass.MONETARY
-    _attr_state_class = SensorStateClass.MEASUREMENT
-    _attr_native_unit_of_measurement = "PLN"
     _attr_icon = "mdi:bank-transfer"
 
     def __init__(self, coordinator: DataUpdateCoordinator, entry: ConfigEntry) -> None:
@@ -70,7 +56,7 @@ class ProsumerDepositLastTransactionSensor(CoordinatorEntity, SensorEntity):
         if self.coordinator.data:
             transactions = self.coordinator.data.get("transactions", [])
             if transactions:
-                return transactions[0].get("amount")
+                normalize_description(transactions[0].get("description") or "")
         return None
 
     @property
@@ -80,10 +66,13 @@ class ProsumerDepositLastTransactionSensor(CoordinatorEntity, SensorEntity):
         transactions = self.coordinator.data.get("transactions", [])
         if not transactions:
             return None
-        last = transactions[0]
         return {
-            "description": last.get("description"),
-            "timestamp": last.get("timestamp"),
-            "contract": last.get("contract"),
-            "id": last.get("id"),
+            "last_10_transactions": [
+                {
+                    k: (normalize_description(v) if k == "description" and isinstance(v, str) else v)
+                    for k, v in t.items()
+                    if k not in ("id", "contract")
+                }
+                for t in transactions[:10]
+            ]
         }

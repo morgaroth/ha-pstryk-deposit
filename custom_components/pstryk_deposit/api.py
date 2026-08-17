@@ -31,6 +31,7 @@ class PstrykJwtClient:
 
     async def _login(self) -> None:
         url = f"{API_BASE_URL}{API_AUTH_TOKEN}"
+        _LOGGER.debug("Attempting login to %s with email: %s", url, self._email)
         try:
             async with self._session.post(
                 url,
@@ -38,14 +39,21 @@ class PstrykJwtClient:
                 headers={"Content-Type": "application/json"},
                 timeout=_TIMEOUT,
             ) as resp:
+                _LOGGER.debug("Login response status: %d", resp.status)
+                _LOGGER.debug("Login response headers: %s", dict(resp.headers))
                 if resp.status in (400, 401, 403):
                     text = await resp.text()
+                    _LOGGER.error("Login failed (%d): %s", resp.status, text[:500])
                     raise PstrykAuthError(f"Login failed ({resp.status}): {text[:200]}")
                 resp.raise_for_status()
                 data = await resp.json()
+                _LOGGER.debug("Login successful, received tokens (access=%s, refresh=%s)",
+                              "yes" if data.get("access") else "no",
+                              "yes" if data.get("refresh") else "no")
                 self._access = data["access"]
                 self._refresh = data.get("refresh")
         except aiohttp.ClientError as err:
+            _LOGGER.error("Network error during login: %s", err)
             raise PstrykApiError(f"Network error during login: {err}") from err
 
     async def _do_refresh(self) -> bool:
@@ -99,8 +107,16 @@ class PstrykJwtClient:
         """Test login credentials. Returns True on success."""
         try:
             await self._login()
+            _LOGGER.debug("test_auth: login succeeded")
             return True
-        except (PstrykAuthError, PstrykApiError):
+        except PstrykAuthError as err:
+            _LOGGER.error("test_auth failed (auth): %s", err)
+            return False
+        except PstrykApiError as err:
+            _LOGGER.error("test_auth failed (api/network): %s", err)
+            return False
+        except Exception as err:
+            _LOGGER.exception("test_auth failed (unexpected): %s", err)
             return False
 
     async def get_prosumer_deposit(self) -> dict:

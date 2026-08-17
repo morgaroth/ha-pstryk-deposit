@@ -1,0 +1,15 @@
+services:
+  homeassistant:
+    container_name: homeassistant-pstryk-deposit-testing
+    image: homeassistant/home-assistant:stable
+    volumes:
+      - ha-config:/config
+      - ./testing/configuration.yaml:/config/configuration.yaml
+      - ./custom_components/pstryk_deposit:/config/custom_components/pstryk_deposit
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+
+volumes:
+  ha-config:

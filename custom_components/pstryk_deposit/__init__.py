@@ -26,7 +26,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     async def _update() -> dict:
         try:
-            return await client.get_prosumer_deposit()
+            raw = await client.get_prosumer_deposit()
+            _LOGGER.debug("Raw API response: %s", raw)
+            return raw
         except PstrykAuthError as err:
             raise UpdateFailed(f"Auth error: {err}") from err
         except PstrykApiError as err:
